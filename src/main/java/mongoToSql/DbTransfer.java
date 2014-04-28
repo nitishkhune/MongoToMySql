@@ -122,29 +122,29 @@ public class DbTransfer {
 	public static void insertIntoMySql(DBObject obj) {
 		try {
 			
-			PreparedStatement st = (PreparedStatement) connectToMySql().prepareStatement("insert into project2.vmLogStats(timestamp,vmname,cpu_usage,cpu_usageMHZ,total_write_latency,total_read_latency,disk_write,disk_read,disk_max_latency,disk_usage,memory_granted,memory_consumed,memory_active,vmmemctl,network_usage,network_received,network_transmitted,power,system_uptime) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+			PreparedStatement st = (PreparedStatement) connectToMySql().prepareStatement("insert into project2.vmLogStats(timestamp,vmname,cpu_usage,cpu_usageMHZ,total_write_latency,total_read_latency,disk_write,disk_read,disk_max_latency,disk_usage,memory_granted,memory_consumed,memory_active,vmmemctl,network_usage,network_received,network_transmitted,power,system_uptime) values(now(),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
 			
 			//System.out.println("**********************");
 			//System.out.println(obj.get("timestamp").toString());
-			st.setString(1, obj.get("timestamp").toString());
-			st.setString(2, obj.get("vmname").toString());
-			st.setInt(3, Integer.parseInt(obj.get("avgcpu").toString()));
-			st.setInt(4, Integer.parseInt(obj.get("avgcpumhz").toString()));
-			st.setInt(5, Integer.parseInt(obj.get("avgWriteLatency").toString()));
-			st.setInt(6, Integer.parseInt(obj.get("avgReadLatency").toString()));
-			st.setInt(7, Integer.parseInt(obj.get("avgDiskWrite").toString()));
-			st.setInt(8, Integer.parseInt(obj.get("avgDiskRead").toString()));
-			st.setInt(9, Integer.parseInt(obj.get("avgDiskMaxTotalLatency").toString()));
-			st.setInt(10, Integer.parseInt(obj.get("avgDiskUsage").toString()));
-			st.setInt(11, Integer.parseInt(obj.get("avgMemGranted").toString()));
-			st.setInt(12, Integer.parseInt(obj.get("avgMemConsumed").toString()));
-			st.setInt(13, Integer.parseInt(obj.get("avgMemActive").toString()));
-			st.setInt(14, Integer.parseInt(obj.get("avgMemVMMemCtl").toString()));
-			st.setInt(15, Integer.parseInt(obj.get("avgNetworkUsage").toString()));
-			st.setInt(16, Integer.parseInt(obj.get("avgNetworkReceived").toString()));
-			st.setInt(17, Integer.parseInt(obj.get("avgNetworkTransmitted").toString()));
-			st.setInt(18, Integer.parseInt(obj.get("avgPower").toString()));
-			st.setInt(19, Integer.parseInt(obj.get("avgSysUptime").toString()));	
+			//st.setString(1, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(System.currentTimeMillis())).toString());
+			st.setString(1, obj.get("_id").toString());
+			st.setDouble(2, Double.parseDouble(obj.get("avgcpu").toString()));
+			st.setDouble(3, Double.parseDouble(obj.get("avgcpumhz").toString()));
+			st.setDouble(4, Double.parseDouble(obj.get("avgWriteLatency").toString()));
+			st.setDouble(5, Double.parseDouble(obj.get("avgReadLatency").toString()));
+			st.setDouble(6, Double.parseDouble(obj.get("avgDiskWrite").toString()));
+			st.setDouble(7, Double.parseDouble(obj.get("avgDiskRead").toString()));
+			st.setDouble(8, Double.parseDouble(obj.get("avgDiskMaxTotalLatency").toString()));
+			st.setDouble(9, Double.parseDouble(obj.get("avgDiskUsage").toString()));
+			st.setDouble(10, Double.parseDouble(obj.get("avgMemGranted").toString()));
+			st.setDouble(11, Double.parseDouble(obj.get("avgMemConsumed").toString()));
+			st.setDouble(12, Double.parseDouble(obj.get("avgMemActive").toString()));
+			st.setDouble(13, Double.parseDouble(obj.get("avgMemVMMemCtl").toString()));
+			st.setDouble(14, Double.parseDouble(obj.get("avgNetworkUsage").toString()));
+			st.setDouble(15, Double.parseDouble(obj.get("avgNetworkReceived").toString()));
+			st.setDouble(16, Double.parseDouble(obj.get("avgNetworkTransmitted").toString()));
+			st.setDouble(17, Double.parseDouble(obj.get("avgPower").toString()));
+			st.setDouble(18, Double.parseDouble(obj.get("avgSysUptime").toString()));	
 			st.executeUpdate();
 		
 		} catch (SQLException e) {
