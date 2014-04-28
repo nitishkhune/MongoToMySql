@@ -4,6 +4,7 @@ import java.net.UnknownHostException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -19,10 +20,10 @@ import com.mysql.jdbc.PreparedStatement;
 
 public class DbTransfer {
 	private static DB db;
-
+	private static Date startTime = null;
 	private static Connection conn;
 	private static final String DRIVER = "com.mysql.jdbc.Driver";
-	private static final String URL = "jdbc:mysql://130.65.133.181:3306/project2";
+	private static final String URL = "jdbc:mysql://localhost:3306/project2";
 	private static final String USERNAME = "root";
 	private static final String PASSWORD = "password";
 
@@ -35,7 +36,6 @@ public class DbTransfer {
 	}
 
 	public static Connection connectToMySql() {
-		 
 		System.out.println("-------- MySQL JDBC Connection Testing ------------");
 	 
 		try {
@@ -52,12 +52,9 @@ public class DbTransfer {
 		}catch (SQLException e) {
 			System.out.println("Connection Failed! Check output console");
 			e.printStackTrace();
-			
 		}
 		return conn;
 	  }
-	
-	
 	
 	/*public static Connection connectToMySql() {
 		if (conn == null) {
@@ -90,17 +87,32 @@ public class DbTransfer {
 		//DBCollection tbl = getConnection().getCollection("logs4");
 		//tbl.rename("temp_logs4");
 		DBCollection tbl = connectToMongoDb().getCollection("projecttemp");
-		
 		System.out.println("Inside MongoDb");
-		/*String grp = "{$group:{_id:'$vmname',avgcpu:{$avg:'$cpu'},avgmemory:{$avg:'$memory'},avgdisk:{$avg:'$disk'},avgnetwork:{$avg:'$network'},avgsystem:{$avg:'$system'}}}";
+		
+		String grp = "{$group:{_id:'$vmname',avgcpu:{$avg:'$cpu_usage'},avgcpumhz:{$avg:'$cpu_usagemhz'},"
+				+ "avgWriteLatency:{$avg:'$datastore_totalWriteLatency'},"
+				+ "avgReadLatency:{$avg:'$datastore_totalReadLatency'},"
+				+ "avgDiskWrite:{$avg:'$disk_write'},"
+				+ "avgDiskRead:{$avg:'$disk_read'},"
+				+ "avgDiskMaxTotalLatency:{$avg:'$disk_maxTotalLatency'},"
+				+ "avgDiskUsage:{$avg:'$disk_usage'},"
+				+ "avgMemGranted:{$avg:'$mem_granted'},"
+				+ "avgMemConsumed:{$avg:'$mem_consumed'},"
+				+ "avgMemActive:{$avg:'$mem_active'},"
+				+ "avgMemVMMemCtl:{$avg:'$mem_vmmemctl'},"
+				+ "avgNetworkUsage:{$avg:'$net_usage'},"
+				+ "avgNetworkReceived:{$avg:'$net_received'},"
+				+ "avgNetworkTransmitted:{$avg:'$net_transmitted'},"
+				+ "avgPower:{$avg:'$power_power'},"
+				+ "avgSysUptime:{$avg:'$sys_uptime'}}}";
 		
 		DBObject group = (DBObject) JSON.parse(grp);
 		AggregationOutput output = tbl.aggregate(group);
-		ArrayList<DBObject> list = (ArrayList<DBObject>) output.results();*/
-		for (DBObject dbObject : tbl.find()) {
-			//System.out.println(dbObject);
-			
-			System.out.println("TimeStamp:"+ dbObject.get("timestamp").toString());
+		ArrayList<DBObject> list = (ArrayList<DBObject>) output.results();
+		//DBObject tempDbObject = null;
+		for (DBObject dbObject : list) {
+			System.out.println("-->"+dbObject);
+			//System.out.println("TimeStamp:"+ dbObject.get("timestamp").toString());
 			insertIntoMySql(dbObject);
 		}
 		
@@ -110,29 +122,29 @@ public class DbTransfer {
 	public static void insertIntoMySql(DBObject obj) {
 		try {
 			
-			PreparedStatement st = (PreparedStatement) connectToMySql().prepareStatement("insert into project2.vmLogStats(timestamp,vmname,cpu_usage,cpu_usageMHZ,total_write_latency,total_read_latency,disk_read,disk_write,disk_max_latency,disk_usage,memory_granted,memory_consumed,memory_active,vmmemctl,network_usage,network_received,network_transmitted,power,system_uptime) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+			PreparedStatement st = (PreparedStatement) connectToMySql().prepareStatement("insert into project2.vmLogStats(timestamp,vmname,cpu_usage,cpu_usageMHZ,total_write_latency,total_read_latency,disk_write,disk_read,disk_max_latency,disk_usage,memory_granted,memory_consumed,memory_active,vmmemctl,network_usage,network_received,network_transmitted,power,system_uptime) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
 			
-			System.out.println("**********************");
-			System.out.println(obj.get("timestamp").toString());
+			//System.out.println("**********************");
+			//System.out.println(obj.get("timestamp").toString());
 			st.setString(1, obj.get("timestamp").toString());
 			st.setString(2, obj.get("vmname").toString());
-			st.setInt(3, Integer.parseInt(obj.get("cpu_usage").toString()));
-			st.setInt(4, Integer.parseInt(obj.get("cpu_usagemhz").toString()));
-			st.setInt(5, Integer.parseInt(obj.get("datastore_totalWriteLatency").toString()));
-			st.setInt(6, Integer.parseInt(obj.get("datastore_totalReadLatency").toString()));
-			st.setInt(7, Integer.parseInt(obj.get("disk_read").toString()));
-			st.setInt(8, Integer.parseInt(obj.get("disk_usage").toString()));
-			st.setInt(9, Integer.parseInt(obj.get("disk_write").toString()));
-			st.setInt(10, Integer.parseInt(obj.get("disk_maxTotalLatency").toString()));
-			st.setInt(11, Integer.parseInt(obj.get("mem_active").toString()));
-			st.setInt(12, Integer.parseInt(obj.get("mem_granted").toString()));
-			st.setInt(13, Integer.parseInt(obj.get("mem_vmmemctl").toString()));
-			st.setInt(14, Integer.parseInt(obj.get("mem_consumed").toString()));
-			st.setInt(15, Integer.parseInt(obj.get("net_usage").toString()));
-			st.setInt(16, Integer.parseInt(obj.get("net_received").toString()));
-			st.setInt(17, Integer.parseInt(obj.get("net_transmitted").toString()));
-			st.setInt(18, Integer.parseInt(obj.get("power_power").toString()));
-			st.setInt(19, Integer.parseInt(obj.get("sys_uptime").toString()));	
+			st.setInt(3, Integer.parseInt(obj.get("avgcpu").toString()));
+			st.setInt(4, Integer.parseInt(obj.get("avgcpumhz").toString()));
+			st.setInt(5, Integer.parseInt(obj.get("avgWriteLatency").toString()));
+			st.setInt(6, Integer.parseInt(obj.get("avgReadLatency").toString()));
+			st.setInt(7, Integer.parseInt(obj.get("avgDiskWrite").toString()));
+			st.setInt(8, Integer.parseInt(obj.get("avgDiskRead").toString()));
+			st.setInt(9, Integer.parseInt(obj.get("avgDiskMaxTotalLatency").toString()));
+			st.setInt(10, Integer.parseInt(obj.get("avgDiskUsage").toString()));
+			st.setInt(11, Integer.parseInt(obj.get("avgMemGranted").toString()));
+			st.setInt(12, Integer.parseInt(obj.get("avgMemConsumed").toString()));
+			st.setInt(13, Integer.parseInt(obj.get("avgMemActive").toString()));
+			st.setInt(14, Integer.parseInt(obj.get("avgMemVMMemCtl").toString()));
+			st.setInt(15, Integer.parseInt(obj.get("avgNetworkUsage").toString()));
+			st.setInt(16, Integer.parseInt(obj.get("avgNetworkReceived").toString()));
+			st.setInt(17, Integer.parseInt(obj.get("avgNetworkTransmitted").toString()));
+			st.setInt(18, Integer.parseInt(obj.get("avgPower").toString()));
+			st.setInt(19, Integer.parseInt(obj.get("avgSysUptime").toString()));	
 			st.executeUpdate();
 		
 		} catch (SQLException e) {
@@ -146,7 +158,7 @@ public class DbTransfer {
 		public void run(){
 			while(true){
 			try{
-				connectToMySql();
+			connectToMySql();
 			getAggregateData();
 			System.out.println(" End one loop");
 			Thread.sleep(300000);
