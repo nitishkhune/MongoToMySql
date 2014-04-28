@@ -158,7 +158,6 @@ public class DbTransfer {
 		public void run(){
 			while(true){
 			try{
-			connectToMySql();
 			getAggregateData();
 			System.out.println(" End one loop");
 			Thread.sleep(300000);
